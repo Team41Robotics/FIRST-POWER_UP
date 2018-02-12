@@ -66,6 +66,7 @@ public:
 	double left_encoder;
 	void move(double leftSpeed, double rightSpeed);
 
+	void ControllerMove(Joystick * controller);
 	position pos;
 };
 

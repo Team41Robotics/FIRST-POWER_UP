@@ -8,7 +8,7 @@
 #define K_I 0.0001
 #define K_D 0.0001
 //An ode to Matt Guo
-//Parker is better than others that have been here.
+//Parker is better than others that have been here. debatable.
 
 #include <iostream>
 #include <string>
@@ -19,6 +19,11 @@
 #include <SmartDashboard/SmartDashboard.h>
 #include <WPILib.h>
 #include "Driving.h"
+#include "Lidar/RPLidar.h"
+
+
+#define DRIVE_MODE 0 //0 = drive station; 1 = controller one stick.
+
 
 class Robot : public frc::IterativeRobot {
 public:
@@ -40,18 +45,44 @@ public:
 		controller = new Joystick(0);
 		rightEncoder = new TalonSRX(5);
 		leftEncoder = new TalonSRX(11);
-		enc = new Encoder(0,1);
+		//enc = new Encoder(0,1);
 
 
-		big_fork = new TalonSRX(8);
-		arm0 = new TalonSRX(4);
-		arm1 = new TalonSRX(9);
-		armAct = new TalonSRX(3);
+		clawLinear = new TalonSRX(9);					//claw linear x
+		arm0 = new TalonSRX(3);						//intake
+		arm1 = new TalonSRX(10);					//intake
+		armAct = new TalonSRX(4);					//rotate claw up
+
+		lift = new TalonSRX(8);						//lift to move vertically
+
+
+	//	test1 = new TalonSRX(6);
+	//	test0 = new TalonSRX(7);
+
+
+		arm_lim_out = new DigitalInput(2);
+		arm_lim_in = new DigitalInput(3);
+		topLift = new DigitalInput(0);
+		bottomLift = new DigitalInput(1);
+
+		//limit switches are plugged into Signal and Ground. They are 1 when open and 0 when closed.
+
+
 	}
+
+	TalonSRX * test1;
+	TalonSRX * test0;
+
+	DigitalInput * arm_lim_out;
+	DigitalInput * arm_lim_in;
+
+	DigitalInput * topLift;
+	DigitalInput * bottomLift;
+
 
 	Encoder * enc;
 
-	TalonSRX * big_fork;
+	TalonSRX * clawLinear;
 
 	TalonSRX * rightEncoder;
 	TalonSRX * leftEncoder;
@@ -60,14 +91,20 @@ public:
 	TalonSRX * arm1;
 	TalonSRX * armAct;
 
+
+
+
+
+
+	TalonSRX * lift;
+
 	Driving * drv;
 	Joystick *joyLeft;
 	Joystick *joyRight;
 	Joystick *controller;
 	double cmxn1;
 	double cmxn2;
-	//chuck margulies was here.
-	//update: chuck is still here.
+	double linearSpeed;
 
 	/*
 	 * This autonomous (along with the chooser code above) shows how to
@@ -104,7 +141,7 @@ public:
 		}
 
 
-		//=========		For grabing a cube with camera		=======================
+		//=========		For grabbing a cube with camera		=======================
 		/****************
 		cmxn1 = SmartDashboard::GetNumber("cmxn1",0);
 		double err = SmartDashboard::GetNumber("cmxn2",0);
@@ -135,24 +172,59 @@ public:
 
 	void TeleopPeriodic()
 	{
-		drv->tankDrive(joyLeft,joyRight);
+
+
+		if(DRIVE_MODE == 0)
+			drv->tankDrive(joyLeft,joyRight);
+		else if(DRIVE_MODE == 1)
+			drv->ControllerMove(controller);
+
+	//	test0->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, controller->GetRawAxis(1));
+	//	test1->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, controller->GetRawAxis(5));
+
+
+
+
+
+		//drv->tankDrive(controller->GetRawAxis(0));
+
 //		double dinodan = enc->Get() * 2.8125;
 //		SmartDashboard::PutNumber("enc",dinodan);
-
 		//possibly add a bias to keep the arm up. something like +0.2
-		big_fork->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -controller->GetRawAxis(1)*0.5);
+		clawLinear->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -controller->GetRawAxis(0)*0.5);
 
 		SmartDashboard::PutNumber("right encoder",rightEncoder->GetSensorCollection().GetQuadraturePosition()*(360.0/1024.0));
 		SmartDashboard::PutNumber("left encoder",leftEncoder->GetSensorCollection().GetQuadraturePosition()*(360.0/1024.0));
 		//SmartDashboard::PutNumber("that number",controller->GetRawAxis(5));
 
-		if(joyRight->GetRawButton(1))
+		/*if(joyRight->GetRawButton(1))
 			armAct->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 1.0);
-		else if (joyLeft->GetRawButton(1))
+		if (joyLeft->GetRawButton(1))
 			armAct->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -1.0);
 		else
-			armAct->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
+			armAct->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);*/
+		int pov = controller->GetPOV(0);
+		linearSpeed = 0;
+		double deploySpeed = 0;
+		if (pov != -1)			//POV is pressed
+		{
 
+			if (pov <= 135 && pov >=45)							//open claw
+				linearSpeed = 1;
+			if (pov <= 315 && pov >=225)						//close claw
+				linearSpeed = -1;
+			if (pov == 0 || pov == 315 || pov == 45)			//stow claw
+				deploySpeed = 1;
+			if (pov == 180 || pov == 135 || pov == 225)			//deploy claw
+				deploySpeed = -1;
+		}
+
+		if( (linearSpeed > 0 && arm_lim_out->Get()) || (linearSpeed < 0 && arm_lim_in->Get()) )
+			clawLinear->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, linearSpeed);
+		else
+			clawLinear->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
+
+		armAct->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, deploySpeed);
 
 		if(controller->GetRawButton(1))
 		{
@@ -165,6 +237,35 @@ public:
 			arm1->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,  controller->GetRawAxis(3));
 		}
 
+
+
+		double lift_speed = -controller->GetRawAxis(5);
+		if(!topLift->Get())
+		{
+			//is hitting.
+			if(lift_speed > 0.0)
+				lift_speed = 0.0;
+		}
+		if(!bottomLift->Get())
+		{
+			//is hitting.
+			if(lift_speed < 0.0)
+				lift_speed = 0.0;
+		}
+		lift->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,  lift_speed);
+
+
+
+		//making the lifty thing do stuff with a slidy boy.
+		// soodo cod:
+		//#define LIFT_LOW 0.0
+		//#define LIFT_HIGH xxxxxxx.xxxxxx			//this will be obtained experimentally. This is the encoder value of the highest position zeroed at the bottom.
+			//make it move to a position based on Drive station sliders. assume there is a joystick named driver_station. the slider is Axis 0 [-1,1]
+
+
+
+SmartDashboard::PutBoolean("that limit",topLift->Get());
+printf("limit %d\n",topLift->Get());
 
 	}
 

@@ -21,7 +21,8 @@ Driving::Driving() {
 	//rightTalon1 = new CANTalon(1);
 }
 
-void Driving::move(double leftspeed, double rightspeed) {
+void Driving::move(double leftspeed, double rightspeed)
+{
 	leftTalon0->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -leftspeed);
 	rightTalon0->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, rightspeed);
 	leftTalon1->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -leftspeed);
@@ -107,6 +108,8 @@ void Driving::tankDrive(Joystick *joyLeft,Joystick *joyRight) {
 	//throttle = -1.0*clamp(joy1->GetRawAxis(1),-1.0,0.0)*(max_throt - min_throt) + min_throt;
 
 
+
+
 	move(joyLeft->GetRawAxis(1), joyRight->GetRawAxis(1));
 
 	//move(joyRight->GetRawAxis(1) - joyRight->GetRawAxis(0) , joyRight->GetRawAxis(1) + joyRight->GetRawAxis(0));
@@ -123,6 +126,11 @@ void Driving::tankDrive(Joystick *joyLeft,Joystick *joyRight) {
 		//move(joy1->GetRawAxis(1)/4, joy1->GetRawAxis(5)/4);
 	}
 
+}
+
+void Driving::ControllerMove(Joystick * controller)
+{
+	move(controller->GetRawAxis(1)*0.6 - controller->GetRawAxis(0)*0.6, controller->GetRawAxis(1)*0.6 + controller->GetRawAxis(0)*0.6);
 }
 
 void Driving::setEncoders()
