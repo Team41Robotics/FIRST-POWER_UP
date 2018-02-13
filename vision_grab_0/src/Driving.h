@@ -68,6 +68,33 @@ public:
 
 	void ControllerMove(Joystick * controller);
 	position pos;
+
+	/*
+	 * leftTalon0 = new TalonSRX(6);
+	leftTalon1 = new TalonSRX(7);
+	rightTalon0 = new TalonSRX(0);
+	rightTalon1 = new TalonSRX(1);
+	Arm0 = new TalonSRX(3);						//intake
+	arm1 = new TalonSRX(10);					//intake
+	armAct = new TalonSRX(4);					//rotate claw up
+
+	lift = new TalonSRX(8);
+	 */
+
+	enum TALON {
+		RIGHT_FRONT = 0,
+		RIGHT_BACK = 1,
+		LEFT_FRONT = 6,
+		LEFT_BACK = 7,
+		LIFT = 8,
+		CLAW_0 = 3,
+		CLAW_1 = 10,
+		CLAW_ROTATION = 4,
+		CLAW_LINEAR = 9
+	};
+
+
+
 };
 
 

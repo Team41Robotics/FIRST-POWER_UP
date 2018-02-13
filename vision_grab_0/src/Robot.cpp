@@ -20,7 +20,7 @@
 #include <WPILib.h>
 #include "Driving.h"
 #include "Lidar/RPLidar.h"
-
+#include "lift.h"
 
 #define DRIVE_MODE 0 //0 = drive station; 1 = controller one stick.
 
@@ -48,55 +48,36 @@ public:
 		//enc = new Encoder(0,1);
 
 
-		clawLinear = new TalonSRX(9);					//claw linear x
-		arm0 = new TalonSRX(3);						//intake
-		arm1 = new TalonSRX(10);					//intake
-		armAct = new TalonSRX(4);					//rotate claw up
-
-		lift = new TalonSRX(8);						//lift to move vertically
-
-
-	//	test1 = new TalonSRX(6);
-	//	test0 = new TalonSRX(7);
-
-
-		arm_lim_out = new DigitalInput(2);
-		arm_lim_in = new DigitalInput(3);
-		topLift = new DigitalInput(0);
-		bottomLift = new DigitalInput(1);
-
-		//limit switches are plugged into Signal and Ground. They are 1 when open and 0 when closed.
-
 
 	}
 
 	TalonSRX * test1;
 	TalonSRX * test0;
 
-	DigitalInput * arm_lim_out;
-	DigitalInput * arm_lim_in;
+//	DigitalInput * arm_lim_out;
+//	DigitalInput * arm_lim_in;
 
-	DigitalInput * topLift;
-	DigitalInput * bottomLift;
+//	DigitalInput * topLift;
+//	DigitalInput * bottomLift;
 
 
-	Encoder * enc;
+//	Encoder * liftEncoder;
 
-	TalonSRX * clawLinear;
+//	TalonSRX * clawLinear;
 
 	TalonSRX * rightEncoder;
 	TalonSRX * leftEncoder;
 
-	TalonSRX * arm0;
-	TalonSRX * arm1;
-	TalonSRX * armAct;
+//	TalonSRX * arm0;
+//	TalonSRX * arm1;
+//	TalonSRX * armAct;
 
 
 
 
 
 
-	TalonSRX * lift;
+//	TalonSRX * lift;
 
 	Driving * drv;
 	Joystick *joyLeft;
@@ -104,7 +85,6 @@ public:
 	Joystick *controller;
 	double cmxn1;
 	double cmxn2;
-	double linearSpeed;
 
 	/*
 	 * This autonomous (along with the chooser code above) shows how to
@@ -179,11 +159,16 @@ public:
 		else if(DRIVE_MODE == 1)
 			drv->ControllerMove(controller);
 
+	//	SmartDashboard::PutNumber("right encoder",rightEncoder->GetSensorCollection().GetQuadraturePosition()*(360.0/1024.0));
+	//	SmartDashboard::PutNumber("left encoder",leftEncoder->GetSensorCollection().GetQuadraturePosition()*(360.0/1024.0));
+
+
+
 	//	test0->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, controller->GetRawAxis(1));
 	//	test1->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, controller->GetRawAxis(5));
 
 
-
+/*
 
 
 		//drv->tankDrive(controller->GetRawAxis(0));
@@ -202,7 +187,7 @@ public:
 		if (joyLeft->GetRawButton(1))
 			armAct->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -1.0);
 		else
-			armAct->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);*/
+			armAct->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);  				* /
 		int pov = controller->GetPOV(0);
 		linearSpeed = 0;
 		double deploySpeed = 0;
@@ -241,6 +226,7 @@ public:
 
 		double lift_speed = -controller->GetRawAxis(5);
 		if(!topLift->Get())
+
 		{
 			//is hitting.
 			if(lift_speed > 0.0)
@@ -256,17 +242,18 @@ public:
 
 
 
-		//making the lifty thing do stuff with a slidy boy.
+		//making the lifty thing do stuff with a slidy boi.
+		//										edit: u/prateek boy->boi
 		// soodo cod:
 		//#define LIFT_LOW 0.0
 		//#define LIFT_HIGH xxxxxxx.xxxxxx			//this will be obtained experimentally. This is the encoder value of the highest position zeroed at the bottom.
 			//make it move to a position based on Drive station sliders. assume there is a joystick named driver_station. the slider is Axis 0 [-1,1]
 
+		SmartDashboard::PutNumber("the lift is at....",liftEncoder->Get());
 
-
-SmartDashboard::PutBoolean("that limit",topLift->Get());
-printf("limit %d\n",topLift->Get());
-
+		SmartDashboard::PutBoolean("that limit",topLift->Get());
+		printf("limit %d\n",topLift->Get());
+*/
 	}
 
 	void TestPeriodic() {}

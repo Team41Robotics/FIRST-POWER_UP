@@ -8,10 +8,10 @@
 #include <Driving.h>
 
 Driving::Driving() {
-	leftTalon0 = new TalonSRX(6);
-	leftTalon1 = new TalonSRX(7);
-	rightTalon0 = new TalonSRX(0);
-	rightTalon1 = new TalonSRX(1);
+	leftTalon0 = new TalonSRX(TALON::LEFT_FRONT);
+	leftTalon1 = new TalonSRX(TALON::LEFT_BACK);
+	rightTalon0 = new TalonSRX(TALON::RIGHT_FRONT);
+	rightTalon1 = new TalonSRX(TALON::RIGHT_BACK);
 
 	turbo = false;
 	turbo_toggle = false;
